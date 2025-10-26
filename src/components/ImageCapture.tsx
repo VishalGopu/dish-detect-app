@@ -24,6 +24,7 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
   const [cameraAvailable, setCameraAvailable] = useState<boolean | null>(null);
   const [showCameraPreview, setShowCameraPreview] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,19 +60,30 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
   const startCamera = async () => {
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } // Prefer rear camera
+        video: { facingMode: 'user' } // Prefer front camera for desktop/laptop
       });
       setStream(mediaStream);
       setShowCameraPreview(true);
+      setIsVideoReady(false);
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        videoRef.current.onloadedmetadata = () => {
+          if (videoRef.current) {
+            videoRef.current.play().then(() => {
+              setIsVideoReady(true);
+            }).catch((error) => {
+              console.error('Error playing video:', error);
+              toast.error('Error starting camera preview');
+            });
+          }
+        };
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
       toast.error('Unable to access camera. Please check permissions or try file upload.');
-      // Fallback to file input
-      cameraInputRef.current?.click();
+      setStream(null);
+      setShowCameraPreview(false);
     }
   };
 
@@ -80,25 +92,42 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
       setShowCameraPreview(false);
+      setIsVideoReady(false);
     }
   };
 
   const capturePhoto = () => {
-    if (!videoRef.current) return;
+    if (!videoRef.current || !isVideoReady) {
+      toast.error('Camera is not ready yet. Please wait...');
+      return;
+    }
     
     const video = videoRef.current;
+    
+    // Check if video has valid dimensions
+    if (video.videoWidth === 0 || video.videoHeight === 0) {
+      toast.error('Camera preview is not ready. Please wait...');
+      return;
+    }
+    
     const canvas = document.createElement('canvas');
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {
+      toast.error('Failed to create canvas context');
+      return;
+    }
     
     ctx.drawImage(video, 0, 0);
     
     // Convert canvas to blob then to file
     canvas.toBlob((blob) => {
-      if (!blob) return;
+      if (!blob) {
+        toast.error('Failed to capture photo');
+        return;
+      }
       
       const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
       
@@ -106,9 +135,11 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const result = e.target?.result as string;
-        setPreview(result);
-        stopCamera();
-        analyzeImage(result, file);
+        if (result) {
+          setPreview(result);
+          stopCamera();
+          analyzeImage(result, file);
+        }
       };
       reader.readAsDataURL(file);
     }, 'image/jpeg', 0.95);
@@ -195,7 +226,7 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
 
       if (insertError) throw insertError;
 
-      toast.success(`✅ ${identifyData.dish_name} added! Today's list updated.`);
+      toast.success("✅ Meal added successfully! Updated your daily list.");
       onImageAnalyzed({
         ...identifyData,
         image_url: urlData.publicUrl,
@@ -247,6 +278,14 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
                 playsInline
                 className="w-full h-64 object-cover bg-gray-900"
               />
+              {!isVideoReady && (
+                <div className="absolute inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center">
+                  <div className="text-center">
+                    <Loader2 className="w-12 h-12 animate-spin text-primary mx-auto mb-3" />
+                    <p className="text-sm font-medium tracking-wide text-white">Starting camera...</p>
+                  </div>
+                </div>
+              )}
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-4">
                 <Button
                   size="lg"
@@ -259,8 +298,13 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
                 </Button>
                 <Button
                   size="lg"
-                  className="rounded-full shadow-lg bg-white hover:bg-gray-100 text-gray-900"
+                  className={`rounded-full shadow-lg ${
+                    isVideoReady 
+                      ? 'bg-white hover:bg-gray-100 text-gray-900' 
+                      : 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                  }`}
                   onClick={capturePhoto}
+                  disabled={!isVideoReady}
                 >
                   <Camera className="w-8 h-8" />
                 </Button>

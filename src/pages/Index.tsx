@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import CalorieProgress from "@/components/CalorieProgress";
@@ -15,6 +15,7 @@ const Index = () => {
   const [profile, setProfile] = useState<any>(null);
   const [todayCalories, setTodayCalories] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const recentMealsRef = useRef<{ refresh: () => Promise<void> }>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -144,8 +145,13 @@ const Index = () => {
     toast.success("Signed out successfully");
   };
 
-  const handleImageAnalyzed = () => {
+  const handleImageAnalyzed = async () => {
+    // Refresh calorie count
     loadUserData();
+    // Refresh recent meals list
+    if (recentMealsRef.current) {
+      await recentMealsRef.current.refresh();
+    }
   };
 
   if (isLoading) {
@@ -244,7 +250,7 @@ const Index = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <RecentMeals userId={user.id} />
+          <RecentMeals ref={recentMealsRef} userId={user.id} />
         </motion.div>
 
         {/* Footer Message */}

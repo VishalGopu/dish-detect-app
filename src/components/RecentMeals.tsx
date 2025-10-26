@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useImperativeHandle, forwardRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,12 +14,11 @@ interface Meal {
   created_at: string;
 }
 
-const RecentMeals = ({ userId }: { userId: string }) => {
+const RecentMeals = forwardRef<
+  { refresh: () => Promise<void> },
+  { userId: string }
+>(({ userId }, ref) => {
   const [meals, setMeals] = useState<Meal[]>([]);
-
-  useEffect(() => {
-    loadMeals();
-  }, [userId]);
 
   const loadMeals = async () => {
     const today = new Date().toISOString().split("T")[0];
@@ -32,6 +31,14 @@ const RecentMeals = ({ userId }: { userId: string }) => {
 
     setMeals(data || []);
   };
+
+  useImperativeHandle(ref, () => ({
+    refresh: loadMeals,
+  }));
+
+  useEffect(() => {
+    loadMeals();
+  }, [userId]);
 
   const deleteMeal = async (id: string) => {
     try {
@@ -55,14 +62,14 @@ const RecentMeals = ({ userId }: { userId: string }) => {
         <CardTitle className="tracking-wide">🍽️ Today's Meals</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3">
-        <AnimatePresence>
+        <AnimatePresence mode="popLayout">
           {meals.map((meal, index) => (
             <motion.div
               key={meal.id}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}
-              transition={{ delay: index * 0.1 }}
+              transition={{ duration: 0.3, delay: 0 }}
               className="flex items-center gap-4 p-4 rounded-xl glass-card hover:shadow-md transition-all"
             >
               {meal.image_url && (
@@ -98,6 +105,8 @@ const RecentMeals = ({ userId }: { userId: string }) => {
       </CardContent>
     </Card>
   );
-};
+});
+
+RecentMeals.displayName = "RecentMeals";
 
 export default RecentMeals;
