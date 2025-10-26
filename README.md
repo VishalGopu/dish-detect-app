@@ -1,73 +1,54 @@
-# Welcome to your Lovable project
+# 🍽️ Dish Detect App – Hackathon Project
 
-## Project info
+**Live Demo:** [https://dish-detect-app.vercel.app](https://dish-detect-app.vercel.app)
 
-**URL**: https://lovable.dev/projects/1abd7c1f-a4a0-45c0-9a12-67b61a380abd
+---
 
-## How can I edit this code?
+## 🚀 Project Overview
 
-There are several ways of editing your application.
+Dish Detect App is an AI-powered application that **identifies dishes from images** in real-time.  
+It helps users instantly recognize food items and fetch detailed information — perfect for cooking enthusiasts, diet tracking, and restaurant menus.
 
-**Use Lovable**
+**Key Highlights for Hackathon:**
+- AI-powered image recognition
+- Instant, real-time dish identification
+- Clean and modern UI for enhanced user experience
+- Scalable and easy to extend with new features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/1abd7c1f-a4a0-45c0-9a12-67b61a380abd) and start prompting.
+---
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technologies Used
 
-**Use your preferred IDE**
+- **Frontend:** React + TypeScript + Vite  
+- **UI Components:** shadcn-ui + Tailwind CSS  
+- **Hosting & Deployment:** Vercel  
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+---
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 👩‍💻 Team & Contributors
 
-Follow these steps:
+| Name | Role | GitHub |
+|------|------|--------|
+| Vishal Gopu | Team Lead / Backend | [VishalGopu](https://github.com/VishalGopu) |
+|Lakshmi Srinivas | Full Stack | https://github.com/kanna-05|
+|Revanth Adepu| AI Generalist | https://github.com/revanthinn|
+|GIRINDRA | Project Management|
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+> All contributors worked collaboratively on this official fork: `HTF25-Team-141`
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## ⚡ How to Run Locally
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+**Prerequisites:** Node.js & npm ([install via nvm](https://github.com/nvm-sh/nvm#installing-and-updating))  
+
+```bash
+# 1. Clone the team fork repository
+git clone https://github.com/VishalGopu/HTF25-Team-141.git
+cd HTF25-Team-141
+
+# 2. Install dependencies
+npm install
+
+# 3. Start development server with live reload
 npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/1abd7c1f-a4a0-45c0-9a12-67b61a380abd) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
