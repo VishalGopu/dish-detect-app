@@ -28,6 +28,7 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const videoReadyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleFileSelect = async (file: File) => {
     if (!file.type.startsWith('image/')) {
@@ -68,16 +69,34 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
       
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
+        
+        // Clear any existing timeout
+        if (videoReadyTimeoutRef.current) {
+          clearTimeout(videoReadyTimeoutRef.current);
+        }
+        
+        // Set up metadata loaded handler
         videoRef.current.onloadedmetadata = () => {
           if (videoRef.current) {
-            videoRef.current.play().then(() => {
-              setIsVideoReady(true);
-            }).catch((error) => {
+            videoRef.current.play().catch((error) => {
               console.error('Error playing video:', error);
               toast.error('Error starting camera preview');
             });
           }
         };
+        
+        // Set up playing handler - this is more reliable
+        videoRef.current.onplaying = () => {
+          if (videoReadyTimeoutRef.current) {
+            clearTimeout(videoReadyTimeoutRef.current);
+          }
+          setIsVideoReady(true);
+        };
+        
+        // Fallback: if video doesn't start playing after 3 seconds, mark as ready anyway
+        videoReadyTimeoutRef.current = setTimeout(() => {
+          setIsVideoReady(true);
+        }, 3000);
       }
     } catch (error) {
       console.error('Error accessing camera:', error);
@@ -88,6 +107,11 @@ const ImageCapture = ({ onImageAnalyzed }: ImageCaptureProps) => {
   };
 
   const stopCamera = () => {
+    if (videoReadyTimeoutRef.current) {
+      clearTimeout(videoReadyTimeoutRef.current);
+      videoReadyTimeoutRef.current = null;
+    }
+    
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
       setStream(null);
